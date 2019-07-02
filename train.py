@@ -1,3 +1,4 @@
+import torch
 import torch.optim as optim
 from data import GANData
 from discriminator import Discriminator
@@ -14,6 +15,7 @@ LEARNING_RATE = 10e-3
 BATCH_SIZE = 16
 K = 1
 latent_size = 32
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Writer will output to ./runs/ directory by default
 writer = SummaryWriter()
@@ -23,8 +25,8 @@ data = GANData(batch_size=BATCH_SIZE)
 img_size = data.get_img_size()
 
 # Instantiate models
-D = Discriminator(img_size)
-G = Generator(img_size, latent_size)
+D = Discriminator(img_size).to(DEVICE)
+G = Generator(img_size, latent_size).to(DEVICE)
 
 # Instantiate criterion for both D and G
 D_criterion = DiscriminatorCriterion()
@@ -48,7 +50,8 @@ for epoch in range(EPOCHS):
         for k in range(K):
             # Sample minibatches from P_data and P_z
             data_mb, _ = next(iter(data.trainloader))
-            z_mb = G.sample_z(BATCH_SIZE)
+            data_mb = data_mb.to(DEVICE)
+            z_mb = G.sample_z(BATCH_SIZE).to(DEVICE)
 
             # Clear accumulated gradients
             D_optim.zero_grad()
@@ -67,7 +70,7 @@ for epoch in range(EPOCHS):
             D_optim.step()
 
         # Update Generator
-        z_mb = G.sample_z(BATCH_SIZE)
+        z_mb = G.sample_z(BATCH_SIZE).to(DEVICE)
 
         # Clear accumulated gradients
         G_optim.zero_grad()
@@ -97,7 +100,7 @@ for epoch in range(EPOCHS):
     writer.add_scalar('discriminator_loss', running_d_loss/d_norm, global_step)
     writer.add_scalar('generator_loss', running_g_loss/g_norm, global_step)
 
-    z_mb = G.sample_z(8)
+    z_mb = G.sample_z(8).to(DEVICE)
     generated_samples = G(z_mb)
 
     grid = torchvision.utils.make_grid(generated_samples.reshape(8, 1, 28, 28))
