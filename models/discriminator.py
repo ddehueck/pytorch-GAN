@@ -1,6 +1,4 @@
-import torch as t
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class Discriminator(nn.Module):
@@ -11,14 +9,21 @@ class Discriminator(nn.Module):
     the input belongs to a the real data distribution.
     """
 
-    def __init__(self, img_size):
+    def __init__(self, img_size, hidden_size):
         super(Discriminator, self).__init__()
 
         self.img_size = img_size
-        self.l1 = nn.Linear(img_size, 64)
-        self.l2 = nn.Linear(64, 128)
-        self.l3 = nn.Linear(128, 64)
-        self.l4 = nn.Linear(64, 1)
+
+        self.model = nn.Sequential(
+            nn.Linear(img_size, hidden_size),
+            nn.LeakyReLU(),
+            nn.Dropout(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.LeakyReLU(),
+            nn.Dropout(),
+            nn.Linear(hidden_size, 1),
+            nn.Sigmoid()
+        )
 
     def forward(self, x):
         """
@@ -27,14 +32,6 @@ class Discriminator(nn.Module):
         :param x: Image tensor
         :return: Float in range [0, 1] - probability score
         """
-
-        # Resize x into a vector
+        # Resize x from a H x W img to a vector
         x = x.view(-1, self.img_size)
-
-        # Pass through layers with a non-linearity
-        x = F.relu(self.l1(x))
-        x = F.relu(self.l2(x))
-        x = F.relu(self.l3(x))
-
-        # Use sigmoid to convert to a probability
-        return t.sigmoid(self.l4(x))
+        return self.model(x).clamp(1e-9)

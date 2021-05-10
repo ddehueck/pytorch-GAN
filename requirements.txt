@@ -1,0 +1,14 @@
+absl-py==0.7.1
+certifi==2019.6.16
+future==0.17.1
+grpcio==1.22.0
+Markdown==3.1.1
+numpy==1.16.4
+Pillow==6.1.0
+protobuf==3.9.0
+six==1.12.0
+tb-nightly==1.15.0a20190720
+torch==1.1.0
+torchvision==0.3.0
+tqdm==4.32.2
+Werkzeug==0.15.5
