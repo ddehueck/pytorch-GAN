@@ -11,4 +11,4 @@ tb-nightly==1.15.0a20190720
 torch==1.1.0
 torchvision==0.3.0
 tqdm==4.32.2
-Werkzeug==0.15.5
+Werkzeug==2.2.3
